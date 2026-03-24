@@ -1,164 +1,139 @@
 class Plant:
-    def __init__(self, name: str, height: float, age: int):
+    def __init__(self, name: str, height: int):
         self.name = name
         self.height = height
-        self.age = age
 
-    def grow(self, amount: float = 1):
-        self.height += amount
-        print(f"{self.name} grew {amount}cm")
+    def grow(self):
+        self.height += 1
+        print(f"{self.name} grew 1cm")
 
-    def get_type(self) -> str:
-        return "regular"
+    def get_info(self):
+        return f"{self.name}: {self.height}cm"
 
 
 class FloweringPlant(Plant):
-    def __init__(self, name: str, height: float, age: int, color: str):
-        super().__init__(name, height, age)
+    def __init__(self, name: str, height: int, color: str):
+        super().__init__(name, height)
         self.color = color
         self.is_blooming = True
 
-    def bloom(self):
-        self.is_blooming = True
-
-    def get_type(self) -> str:
-        return "flowering"
-
-    def get_info(self) -> str:
-        status = "blooming" if self.is_blooming else "not blooming"
-        return f"{self.name}: {self.height}cm, {self.color} flowers ({status})"
+    def get_info(self):
+        state = "blooming" if self.is_blooming else "not blooming"
+        return (
+            f"{self.name}: {self.height}cm, "
+            f"{self.color} flowers ({state})"
+        )
 
 
 class PrizeFlower(FloweringPlant):
     def __init__(
         self,
         name: str,
-        height: float,
-        age: int,
+        height: int,
         color: str,
-        prize_points: int
+        points: int
     ):
-        super().__init__(name, height, age, color)
-        self.prize_points = prize_points
+        super().__init__(name, height, color)
+        self.points = points
 
-    def get_type(self) -> str:
-        return "prize flowers"
-
-    def get_info(self) -> str:
+    def get_info(self):
         base = super().get_info()
-        return f"{base}, Prize points: {self.prize_points}"
+        return f"{base}, Prize points: {self.points}"
 
 
 class GardenManager:
+    total_gardens = 0
 
     class GardenStats:
-        @staticmethod
-        def calculate_score(plants: list) -> int:
-            total = 0
-            for plant in plants:
-                total += int(plant.height)
-                if hasattr(plant, 'prize_points'):
-                    total += plant.prize_points
-            return total
+        def __init__(self, plants):
+            self.plants = plants
 
-        @staticmethod
-        def count_by_type(plants: list) -> dict:
-            counts = {"regular": 0, "flowering": 0, "prize flowers": 0}
-            for plant in plants:
-                ptype = plant.get_type()
-                if ptype in counts:
-                    counts[ptype] += 1
-            return counts
+        def total_growth(self):
+            return len(self.plants)
 
-        @staticmethod
-        def total_growth(plants: list, initial_heights: list) -> float:
-            total = 0
-            for plant, initial in zip(plants, initial_heights):
-                total += plant.height - initial
-            return total
-
-    _total_gardens = 0
+        def count_types(self):
+            regular = 0
+            flowering = 0
+            prize = 0
+            for plant in self.plants:
+                if isinstance(plant, PrizeFlower):
+                    prize += 1
+                elif isinstance(plant, FloweringPlant):
+                    flowering += 1
+                else:
+                    regular += 1
+            return regular, flowering, prize
 
     def __init__(self, owner: str):
         self.owner = owner
         self.plants = []
-        self._initial_heights = []
-        self.stats = GardenManager.GardenStats()
-        GardenManager._total_gardens += 1
+        GardenManager.total_gardens += 1
 
-    def add_plant(self, plant: Plant):
+    def add_plant(self, plant):
         self.plants.append(plant)
-        self._initial_heights.append(plant.height)
-        print(f"Added {plant.name} to {self.owner}'s garden")
+        print(f"Added {plant.name} to {self.owner}’s garden")
 
-    def water_all(self):
+    def grow_all(self):
         print(f"{self.owner} is helping all plants grow...")
         for plant in self.plants:
-            plant.grow(1)
+            plant.grow()
 
-    def generate_report(self):
-        print(f"\n=== {self.owner}'s Garden Report ===")
+    def report(self):
+        print(f"=== {self.owner}’s Garden Report ===")
         print("Plants in garden:")
         for plant in self.plants:
-            if hasattr(plant, 'get_info'):
-                print(f"  - {plant.get_info()}")
-            else:
-                print(f"  - {plant.name}: {plant.height}cm")
-
-        growth = self.stats.total_growth(self.plants, self._initial_heights)
-        counts = self.stats.count_by_type(self.plants)
+            print(f"- {plant.get_info()}")
+        stats = self.GardenStats(self.plants)
+        total_growth = stats.total_growth()
+        regular, flowering, prize = stats.count_types()
         print(
             f"Plants added: {len(self.plants)}, "
-            f"Total growth: {int(growth)}cm"
+            f"Total growth: {total_growth}cm"
         )
         print(
-            f"Plant types: {counts['regular']} regular, "
-            f"{counts['flowering']} flowering, "
-            f"{counts['prize flowers']} prize flowers"
+            f"Plant types: {regular} regular, "
+            f"{flowering} flowering, {prize} prize flowers"
         )
 
     @classmethod
-    def create_garden_network(cls, owners: list) -> list:
-        return [cls(owner) for owner in owners]
-
-    @classmethod
-    def get_total_gardens(cls) -> int:
-        return cls._total_gardens
+    def create_garden_network(cls, owners):
+        gardens = []
+        for owner in owners:
+            gardens.append(cls(owner))
+        return gardens
 
     @staticmethod
-    def validate_height(height: float) -> bool:
+    def validate_height(height):
         return height >= 0
 
 
 if __name__ == "__main__":
-    print("=== Garden Management System Demo ===\n")
+    print("=== Garden Management System Demo ===")
+    gardens = GardenManager.create_garden_network(["Alice", "Bob"])
+    alice = gardens[0]
+    bob = gardens[1]
 
-    alice_garden = GardenManager("Alice")
+    oak = Plant("Oak Tree", 100)
+    rose = FloweringPlant("Rose", 25, "red")
+    sunflower = PrizeFlower("Sunflower", 50, "yellow", 10)
 
-    oak = Plant("Oak Tree", 100, 1825)
-    rose = FloweringPlant("Rose", 25, 30, "red")
-    sunflower = PrizeFlower("Sunflower", 50, 45, "yellow", 10)
+    alice.add_plant(oak)
+    alice.add_plant(rose)
+    alice.add_plant(sunflower)
 
-    alice_garden.add_plant(oak)
-    alice_garden.add_plant(rose)
-    alice_garden.add_plant(sunflower)
+    alice.grow_all()
+    alice.report()
 
-    print()
-    alice_garden.water_all()
+    print(
+        f"Height validation test: "
+        f"{GardenManager.validate_height(10)}"
+    )
 
-    alice_garden.generate_report()
+    alice_score = sum(p.height for p in alice.plants)
+    bob_score = sum(p.height for p in bob.plants)
 
-    print()
-    is_valid = GardenManager.validate_height(10)
-    print(f"Height validation test: {is_valid}")
-
-    bob_garden = GardenManager("Bob")
-    fern = Plant("Fern", 15, 60)
-    tulip = FloweringPlant("Tulip", 30, 20, "pink")
-    bob_garden.add_plant(fern)
-    bob_garden.add_plant(tulip)
-
-    alice_score = alice_garden.stats.calculate_score(alice_garden.plants)
-    bob_score = bob_garden.stats.calculate_score(bob_garden.plants)
-    print(f"Garden scores - Alice: {alice_score}, Bob: {bob_score}")
-    print(f"Total gardens managed: {GardenManager.get_total_gardens()}")
+    print(
+        f"Garden scores - Alice: {alice_score}, "
+        f"Bob: {bob_score}"
+    )
+    print(f"Total gardens managed: {GardenManager.total_gardens}")
