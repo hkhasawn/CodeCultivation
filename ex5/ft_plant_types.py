@@ -1,63 +1,94 @@
 class Plant:
-    def __init__(self, name: str, height: int, age: int):
+    def __init__(self, name: str, height: float, age: int):
         self.name = name
-        self.height = height
-        self.age = age
+        self._height = height
+        self._age = age
+
+    def show(self) -> None:
+        print(f"{self.name}: {round(self._height, 1)}cm, {self._age} days old")
+
+    def grow(self) -> None:
+        self._height += 2.1
+
+    def age_up(self) -> None:
+        self._age += 1
 
 
 class Flower(Plant):
-    def __init__(self, name: str, height: int, age: int, color: str):
+    def __init__(self, name: str, height: float, age: int, color: str):
         super().__init__(name, height, age)
         self.color = color
+        self._bloomed = False
+
+    def show(self) -> None:
+        super().show()
+        print(f"Color:  {self.color}")
+        if self._bloomed:
+            print(f"{self.name} is blooming beautifully!")
+        else:
+            print(f"{self.name} has not bloomed yet")
 
     def bloom(self) -> None:
-        print(f"{self.name} is blooming beautifully!")
+        self._bloomed = True
 
 
 class Tree(Plant):
-    def __init__(self, name: str, height: int, age: int, trunk_diameter: int):
+    def __init__(self, name, height, age, trunk_diameter):
         super().__init__(name, height, age)
         self.trunk_diameter = trunk_diameter
 
+    def show(self) -> None:
+        super().show()
+        print(f"Trunk diameter:  {round(self.trunk_diameter, 1)}cm")
+
     def produce_shade(self) -> None:
-        shade_area = self.trunk_diameter * self.height
-        print(f"{self.name} provides {shade_area} square meters of shade")
+        print(
+            f"Tree {self.name} now produces a shade of "
+            f"{round(self._height, 1)}cm long and "
+            f"{round(self.trunk_diameter, 1)}cm wide."
+        )
 
 
 class Vegetable(Plant):
-    def __init__(
-        self,
-        name: str,
-        height: int,
-        age: int,
-        harvest_season: str,
-        nutritional_value: str,
-    ):
+    def __init__(self, name, height: float, age: int, harvest_season: str):
         super().__init__(name, height, age)
         self.harvest_season = harvest_season
-        self.nutritional_value = nutritional_value
+        self.nutritional_value = 0
+
+    def show(self) -> None:
+        super().show()
+        print(f"Harvest season:  {self.harvest_season}")
+        print(f"Nutritional value:  {self.nutritional_value}")
+
+    def grow(self) -> None:
+        super().grow()
+        self.nutritional_value += 1
+
+    def age_up(self) -> None:
+        super().age_up()
 
 
 if __name__ == "__main__":
     print("=== Garden Plant Types ===")
-    flower1 = Flower("Rose", 25, 30, "red")
-    flower2 = Flower("Tulip", 20, 25, "yellow")
-    tree1 = Tree("Oak", 500, 1825, 50)
-    tree2 = Tree("Pine", 400, 1500, 40)
-    veg1 = Vegetable("Tomato", 80, 90, "summer", "Vitamin C")
-    veg2 = Vegetable("Carrot", 30, 70, "winter", "Vitamin A")
-    print(
-        f"{flower1.name} (Flower): {flower1.height}cm,"
-        f" {flower1.age} days, {flower1.color} color"
-    )
-    flower1.bloom()
-    print(
-        f"{tree1.name} (Tree): {tree1.height}cm,"
-        f" {tree1.age} days, {tree1.trunk_diameter}cm diameter"
-    )
-    tree1.produce_shade()
-    print(
-        f"{veg1.name} (Vegetable): {veg1.height}cm,"
-        f" {veg1.age} days, {veg1.harvest_season} harvest"
-    )
-    print(f"{veg1.name} is rich in {veg1.nutritional_value}")
+
+    print("=== Flower")
+    rose = Flower("Rose", 15.0, 10, "red")
+    rose.show()
+    print("[asking the rose to bloom]")
+    rose.bloom()
+    rose.show()
+
+    print("\n=== Tree")
+    oak = Tree("Oak", 200.0, 365, 5.0)
+    oak.show()
+    print("[asking the oak to produce shade]")
+    oak.produce_shade()
+
+    print("\n=== Vegetable")
+    tomato = Vegetable("Tomato", 5.0, 10, "April")
+    tomato.show()
+    print("[make tomato grow and age for 20 days]")
+    for _ in range(20):
+        tomato.grow()
+        tomato.age_up()
+    tomato.show()

@@ -1,139 +1,162 @@
 class Plant:
-    def __init__(self, name: str, height: int):
+    def __init__(self, name: str, height: float, age: int):
         self.name = name
-        self.height = height
+        self._height = height
+        self._age = age
+        self._stats = self.Stats()
 
-    def grow(self):
-        self.height += 1
-        print(f"{self.name} grew 1cm")
+    class Stats:
+        def __init__(self) -> None:
+            self._grow_calls = 0
+            self._age_calls = 0
+            self._show_calls = 0
 
-    def get_info(self):
-        return f"{self.name}: {self.height}cm"
+        def show_stats(self) -> None:
+            print(f"Stats:  {self._grow_calls} grow,"
+                  f" {self._age_calls} age,"
+                  f" {self._show_calls} show")
 
+    def show(self) -> None:
+        self._stats._show_calls += 1
+        print(f"{self.name}:  {round(self._height, 1)}cm,"
+              f" {self._age} days old")
 
-class FloweringPlant(Plant):
-    def __init__(self, name: str, height: int, color: str):
-        super().__init__(name, height)
-        self.color = color
-        self.is_blooming = True
+    def grow(self) -> None:
+        self._stats._grow_calls += 1
+        self._height += 2.1
 
-    def get_info(self):
-        state = "blooming" if self.is_blooming else "not blooming"
-        return (
-            f"{self.name}: {self.height}cm, "
-            f"{self.color} flowers ({state})"
-        )
-
-
-class PrizeFlower(FloweringPlant):
-    def __init__(
-        self,
-        name: str,
-        height: int,
-        color: str,
-        points: int
-    ):
-        super().__init__(name, height, color)
-        self.points = points
-
-    def get_info(self):
-        base = super().get_info()
-        return f"{base}, Prize points: {self.points}"
-
-
-class GardenManager:
-    total_gardens = 0
-
-    class GardenStats:
-        def __init__(self, plants):
-            self.plants = plants
-
-        def total_growth(self):
-            return len(self.plants)
-
-        def count_types(self):
-            regular = 0
-            flowering = 0
-            prize = 0
-            for plant in self.plants:
-                if isinstance(plant, PrizeFlower):
-                    prize += 1
-                elif isinstance(plant, FloweringPlant):
-                    flowering += 1
-                else:
-                    regular += 1
-            return regular, flowering, prize
-
-    def __init__(self, owner: str):
-        self.owner = owner
-        self.plants = []
-        GardenManager.total_gardens += 1
-
-    def add_plant(self, plant):
-        self.plants.append(plant)
-        print(f"Added {plant.name} to {self.owner}’s garden")
-
-    def grow_all(self):
-        print(f"{self.owner} is helping all plants grow...")
-        for plant in self.plants:
-            plant.grow()
-
-    def report(self):
-        print(f"=== {self.owner}’s Garden Report ===")
-        print("Plants in garden:")
-        for plant in self.plants:
-            print(f"- {plant.get_info()}")
-        stats = self.GardenStats(self.plants)
-        total_growth = stats.total_growth()
-        regular, flowering, prize = stats.count_types()
-        print(
-            f"Plants added: {len(self.plants)}, "
-            f"Total growth: {total_growth}cm"
-        )
-        print(
-            f"Plant types: {regular} regular, "
-            f"{flowering} flowering, {prize} prize flowers"
-        )
-
-    @classmethod
-    def create_garden_network(cls, owners):
-        gardens = []
-        for owner in owners:
-            gardens.append(cls(owner))
-        return gardens
+    def age_up(self) -> None:
+        self._stats._age_calls += 1
+        self._age += 1
 
     @staticmethod
-    def validate_height(height):
-        return height >= 0
+    def is_older_than_year(age: int) -> bool:
+        return age > 365
+
+    @classmethod
+    def create_anonymous(cls) -> "Plant":
+        return cls("Unknown plant", 0.0, 0)
+
+
+class Flower(Plant):
+    def __init__(self, name: str, height: float, age: int, color: str):
+        super().__init__(name, height, age)
+        self.color = color
+        self._bloomed = False
+
+    def show(self) -> None:
+        super().show()
+        print(f"Color:  {self.color}")
+        if self._bloomed:
+            print(f"{self.name} is blooming beautifully!")
+        else:
+            print(f"{self.name} has not bloomed yet")
+
+    def bloom(self) -> None:
+        self._bloomed = True
+
+
+class Tree(Plant):
+    def __init__(self, name: str, height: float,
+                 age: int, trunk_diameter: float):
+        super().__init__(name, height, age)
+        self.trunk_diameter = trunk_diameter
+        self._shade_calls = 0
+
+    def show(self) -> None:
+        super().show()
+        print(f"Trunk diameter:  {round(self.trunk_diameter, 1)}cm")
+
+    def produce_shade(self) -> None:
+        self._shade_calls += 1
+        print(f"Tree {self.name} now produces a shade of "
+              f"{round(self._height, 1)}cm long and "
+              f"{round(self.trunk_diameter, 1)}cm wide.")
+
+    def show_stats(self) -> None:
+        self._stats.show_stats()
+        print(f"{self._shade_calls} shade")
+
+
+class Vegetable(Plant):
+    def __init__(self, name: str, height: float, age: int,
+                 harvest_season: str):
+        super().__init__(name, height, age)
+        self.harvest_season = harvest_season
+        self.nutritional_value = 0
+
+    def show(self) -> None:
+        super().show()
+        print(f"Harvest season:  {self.harvest_season}")
+        print(f"Nutritional value:  {self.nutritional_value}")
+
+    def grow(self) -> None:
+        super().grow()
+        self.nutritional_value += 1
+
+    def age_up(self) -> None:
+        super().age_up()
+
+
+class Seed(Flower):
+    def __init__(self, name: str, height: float,
+                 age: int, color: str, seed_count: int):
+        super().__init__(name, height, age, color)
+        self.seed_count = seed_count
+
+    def show(self) -> None:
+        super().show()
+        print(f"Seeds:  {self.seed_count if self._bloomed else 0}")
+
+    def bloom(self) -> None:
+        super().bloom()
+
+
+def display_stats(plant: Plant) -> None:
+    print(f"[statistics for {plant.name}]")
+    if isinstance(plant, Tree):
+        plant.show_stats()
+    else:
+        plant._stats.show_stats()
 
 
 if __name__ == "__main__":
-    print("=== Garden Management System Demo ===")
-    gardens = GardenManager.create_garden_network(["Alice", "Bob"])
-    alice = gardens[0]
-    bob = gardens[1]
+    print("=== Garden statistics ===")
 
-    oak = Plant("Oak Tree", 100)
-    rose = FloweringPlant("Rose", 25, "red")
-    sunflower = PrizeFlower("Sunflower", 50, "yellow", 10)
+    print("=== Check year-old")
+    print(f"Is 30 days more than a year?  -> {Plant.is_older_than_year(30)}")
+    print(f"Is 400 days more than a year?  -> {Plant.is_older_than_year(400)}")
 
-    alice.add_plant(oak)
-    alice.add_plant(rose)
-    alice.add_plant(sunflower)
+    print("\n=== Flower")
+    rose = Flower("Rose", 15.0, 10, "red")
+    rose.show()
+    display_stats(rose)
+    print("[asking the rose to grow and bloom]")
+    rose.grow()
+    rose.bloom()
+    rose.show()
+    display_stats(rose)
 
-    alice.grow_all()
-    alice.report()
+    print("\n=== Tree")
+    oak = Tree("Oak", 200.0, 365, 5.0)
+    oak.show()
+    display_stats(oak)
+    print("[asking the oak to produce shade]")
+    oak.produce_shade()
+    display_stats(oak)
 
-    print(
-        f"Height validation test: "
-        f"{GardenManager.validate_height(10)}"
-    )
+    print("\n=== Seed")
+    sunflower = Seed("Sunflower", 80.0, 45, "yellow", 42)
+    sunflower.show()
+    print("[make sunflower grow, age and bloom]")
+    for _ in range(20):
+        sunflower.grow()
+        sunflower.age_up()
+    sunflower.bloom()
+    sunflower.show()
+    display_stats(sunflower)
 
-    alice_score = sum(p.height for p in alice.plants)
-    bob_score = sum(p.height for p in bob.plants)
-
-    print(
-        f"Garden scores - Alice: {alice_score}, "
-        f"Bob: {bob_score}"
-    )
-    print(f"Total gardens managed: {GardenManager.total_gardens}")
+    print("\n=== Anonymous")
+    anon = Plant.create_anonymous()
+    anon.show()
+    display_stats(anon)
